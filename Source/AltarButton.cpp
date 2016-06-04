@@ -3,11 +3,17 @@
 Font * AltarButton::wingdings = nullptr;
 Font * AltarButton::webdings  = nullptr;
 
-AltarButton::AltarButton( const String & _text, const Font * _font )
+AltarButton::AltarButton( const String & _text, const Font * _font, size_t _fontHeight )
 	: Button( _text )
 	, font(_font)
 	{
 	setButtonText(_text);
+	if( _fontHeight != 0 )
+		{
+		fontHeight = _fontHeight;
+		}
+	else
+		fontHeight = font->getHeight();
 	}
 
 
@@ -19,7 +25,7 @@ void AltarButton::paintButton(Graphics &g, bool isMouseOverButton, bool isButton
 
 	if( font == nullptr ) return;
 	Font &f = Font( *font );
-	f.setHeight( getHeight() / 2.0 );
+	f.setHeight( fontHeight );
 	if( isButtonDown ) f.setHeight( f.getHeight() * 0.9 );
 	g.setFont( f );
 

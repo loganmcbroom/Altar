@@ -23,29 +23,28 @@ public:
 	~AltarClip();
 
 	const File & getFile();
-	AudioThumbnail &getThumbnail();
+	AudioThumbnail & getThumbnail();
 
 	void playPressed();
 	void stopPressed();
 
-	static AltarClip *active;
+	static AltarClip * active;
 
-private:   
+private:  
 
 	AudioTransportSource &transportSource;
-	AudioFormatManager &formatManager;
+	AudioFormatManager &formatManager; 
 	
 	TemporaryFile audioFile;
 	AudioThumbnail thumbnail;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AltarButton busButton, saveButton, printButton, eraseButton;
+
+	AltarButton busButton, saveButton;
 	DrawableRectangle currentPosition;
 
 	static Colour backgroundColour;
 	
 	void timerCallback();
-	void setButtonPlay();
-	void setButtonStop();
 	void changeListenerCallback( ChangeBroadcaster* source ) override;
 	void paintButton(Graphics &g, bool isMouseOverButton, bool isButtonDown) override;
 	void buttonClicked( Button *button ) override;

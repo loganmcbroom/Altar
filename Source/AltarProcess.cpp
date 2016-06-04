@@ -8,6 +8,8 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+#include "cdp_lua_functions.h"
+
 using namespace std;
 
 unsigned int getUID()
@@ -35,98 +37,52 @@ void clearGenerateFiles()
 	generatedFiles.clear();
 	}
 
-//Same as cdp() but doesn't block
-//unimplemented, sorry bozo
-static int cdpPar( lua_State * L )
+bool cdp( string command, const string & workingDir, vector<string> &outFiles )
 	{
-	return 0;
-	}
-
-//Lua function used for calling arbitrary cdp modules
-static int cdp( lua_State * L )
-	{
-	vector<string> plannedFiles; 
-	string fullCommand;
-	int numPlannedFiles = 0;
-
-	//Lambda function for getting and checking strings from the lua stack
-	auto getLuaString = [ &L ]( int index, const char * error )
-		{
-		const char * s = lua_tostring( L, index );
-		if( s == nullptr ) luaL_error( L, error );
-		return string( s );
-		};
-
-	//Get the module name and cdp directory, form the complete exe string and copy to fullCommand
-	{
-	string exe = getLuaString( 1, "Module name sent to cdp is not a valid string" );
-	lua_getglobal( L, "cdpDir" );
-	fullCommand = getLuaString( -1, "cdpDir given in lua script is not a valid string" ) + exe + string( ".exe" );
-	lua_pop( L, 1 );
-	}
-
-	//Get remaining arguments from the lua stack
-	{
-	int argCount = lua_gettop( L ) - 1;
-	for( int i = 0; i < argCount; ++i )
-		{
-		//+2 accounting for lua indices starting at one and the first stack entry being the module name
-		fullCommand += " " + getLuaString( i + 2, "Unknown argument passed to cdp is not a valid string" );
-		}
-	}
-
 	//Check the arguments for any special tokens and replace them with appropriate strings
 	{
-	//Get the directory to put files in. We could generate files in the OS temp dir but if something breaks we need access
-	lua_getglobal( L, "workingDir" );
-	string workingDir = getLuaString( -1, "workingDir given in lua script is not a valid string" );
-	lua_pop( L, 1 );
-
 	//Lambda function for replacing character tokens with generated files of specified type
-	auto tokenReplace = [&]( char c, string fileType )
+	auto tokenReplace = [&]( char c, string fileType, vector<string> & output )
 		{
 		size_t stringPos = 0;
-		while( ( stringPos = fullCommand.find( c, stringPos ) ) != string::npos )
+		while( ( stringPos = command.find( c, stringPos ) ) != string::npos )
 			{
 			string path = "\"" + workingDir + "/_altartemp_" + to_string( getUID() ) + fileType + "\"";
-			fullCommand.replace( stringPos, 1, path );
-			plannedFiles.emplace_back( path );
-			++numPlannedFiles;
+			command.replace( stringPos, 1, path );
+			output.emplace_back( path );
+			Logger::writeToLog( path );
 			}
 		};
 	//Token replacements
-	tokenReplace( '$', ".wav" );
+	tokenReplace( '$', ".wav", outFiles );
 	}
 
 	//Make the call to the exe requested and display output
 	{
-	bool startStatus, endStatus;
+	bool startStatus;
+	uint32 endStatus;
 	{ //Start it up, block until finished, display output, get the exit code. 
 		//We can't run away to lua until ChildProcess comes off the stack or we'll get memory leak problems ( hence extra braces )
 		ChildProcess cdpProcess;
-		startStatus = cdpProcess.start( fullCommand );
+		Logger::writeToLog( "[CDP] Running command: " + command );
+		startStatus = cdpProcess.start( command );
 		Logger::writeToLog( "[CDP] " + cdpProcess.readAllProcessOutput() );
 		endStatus = cdpProcess.getExitCode();
 	}
-
-	//If it errored on startup or on exiting, bail all the way out
-	if( ! startStatus )  return luaL_error( L, "[CDP] Error starting the CDP process" );
-	if( endStatus != 0 ) return luaL_error( L, ( string( "[CDP] Process exited with error code " ) + to_string( endStatus ) ).c_str() );
+	//If it errored on startup or on exiting, bail
+	if( ! startStatus || endStatus != 0 ) 
+		{
+		Logger::writeToLog( "[CDP] Exited with error code " + to_string( endStatus ) );
+		return false;
+		}
 	}
 	
 	//if we get here the call succeeded. Add the planned files onto the generated files list and return the output files
-	{
-	generatedFiles.insert( generatedFiles.end(), plannedFiles.begin(), plannedFiles.end() );
-	for( int i = 0; i < numPlannedFiles; ++i )
-		{
-		Logger::writeToLog( plannedFiles[i] );
-		lua_pushstring( L, plannedFiles[i].c_str() );
-		}
+	generatedFiles.insert( generatedFiles.end(), outFiles.begin(), outFiles.end() );
+
+	return true;
 	}
 
-	return numPlannedFiles;
-	}
-	
 vector<string> altarProcess( const vector<string> &inputs, const string &luaFile )
 	{
 	//Make sure the script supplied exists
@@ -142,7 +98,7 @@ vector<string> altarProcess( const vector<string> &inputs, const string &luaFile
 	luaL_openlibs( L );
 
 	//Register all those fine lua functions you made I'm sure
-	lua_register( L, "cdp", cdp );
+	registerCdpLuaFunctions( L );
 	//Get the current stack top so we can get the correct number of outputs later
 	int top = lua_gettop(L);
 	//Load the supplied script

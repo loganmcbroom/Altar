@@ -17,13 +17,10 @@ AltarClip::AltarClip( File &_file
 	: Button( _file.getFullPathName() )
 	, transportSource( _transportSource )
 	, formatManager( _formatManager )
-	//, audioFile( File::getCurrentWorkingDirectory().getFullPathName() + String( "/_altartemp_" ) + _file.getFileName()  )
 	, audioFile( _file )
 	, thumbnail( 512, _formatManager, _thumbnailCache )
-	, busButton  ( "4", AltarButton::webdings  ) 
-	, saveButton ( "<", AltarButton::wingdings )
-	, printButton( "f", AltarButton::webdings  ) //unused
-	, eraseButton( "r", AltarButton::webdings  )
+	, busButton  ( "4", AltarButton::webdings, 18 ) 
+	, saveButton ( "<", AltarButton::wingdings, 18 )
 	{
 	_file.copyFileTo( audioFile.getFile() );
 	if( isOwner ) 
@@ -35,27 +32,23 @@ AltarClip::AltarClip( File &_file
 	thumbnail.addChangeListener( this );
 	thumbnail.setSource( new FileInputSource( audioFile.getFile() ) );
 
-	AudioFormatReader *reader = formatManager.createReaderFor( audioFile.getFile() );
+	AudioFormatReader * reader = formatManager.createReaderFor( audioFile.getFile() );
 	if( reader != nullptr )
 		{
 		std::unique_ptr<AudioFormatReaderSource> newSource( new AudioFormatReaderSource( reader, true ) );
 		readerSource.swap( newSource );
 		}
-	//else throw;
 
 	addAndMakeVisible( busButton   );
 	addAndMakeVisible( saveButton  );
-	//addAndMakeVisible( printButton );
-	addAndMakeVisible( eraseButton );
 
 	saveButton.addListener( this );
 	busButton .addListener( this );
 
 	setRadioGroupId( CLIP_GROUP_ID );
-	//setClickingTogglesState( true );
 
-	currentPosition.setFill (Colours::white.withAlpha (0.85f));
-    addAndMakeVisible (currentPosition);
+	currentPosition.setFill( Colours::white.withAlpha( 0.85f ) );
+    addAndMakeVisible( currentPosition );
 	}
 
 
@@ -69,8 +62,6 @@ void AltarClip::resized()
 	size_t s = getHeight() / 2;
 	busButton.setBounds  ( 0, 0, s, s );
 	saveButton.setBounds ( 0, s, s, s );
-	printButton.setBounds( s, 0, s, s );
-	eraseButton.setBounds( s, s, s, s );
 	}
 
 const File &AltarClip::getFile() { return audioFile.getFile(); }
@@ -99,18 +90,6 @@ void AltarClip::paintButton(Graphics &g, bool isMouseOverButton, bool isButtonDo
 	//				Justification::topLeft );
 	}
 
-void AltarClip::setButtonPlay()
-	{
-	busButton.setButtonText( "4" );
-	busButton.font = AltarButton::webdings;
-	}
-
-void AltarClip::setButtonStop()
-	{
-	busButton.setButtonText( "n" );
-	busButton.font = AltarButton::wingdings;
-	}
-
 void AltarClip::changeListenerCallback( ChangeBroadcaster* source )
 	{
 	if( source == &transportSource ) stopPressed();
@@ -125,7 +104,8 @@ void AltarClip::playPressed()
 	startTimer( 33 );
 	active = this;
 	
-	setButtonStop();
+	busButton.setButtonText( "n" );
+	busButton.font = AltarButton::wingdings;
 
 	transportSource.setSource( readerSource.get(), 0, nullptr, readerSource->getAudioFormatReader()->sampleRate );
 	transportSource.start();
@@ -137,7 +117,8 @@ void AltarClip::stopPressed()
 	stopTimer();
 	transportSource.setSource( nullptr );
 	setToggleState( false, NotificationType::dontSendNotification );
-	setButtonPlay();
+	busButton.setButtonText( "4" );
+	busButton.font = AltarButton::webdings;
 	transportSource.removeChangeListener( this );
 	active = nullptr;
 	transportSource.stop();

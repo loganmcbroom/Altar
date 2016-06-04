@@ -10,14 +10,11 @@ MainContentComponent::MainContentComponent()
 	, procButton( "P", &fontSymbol )
 	, command( "command" )
 	, formatManager()
-	, inClips( "inClips", formatManager, transportSource )
-	, outClips( "outClips", formatManager, transportSource )
+	, inClips( formatManager, transportSource )
+	, outClips( formatManager, transportSource )
 	{
 	AltarButton::wingdings = &fontWingdings;
 	AltarButton::webdings = &fontWebdings;
-
-	inClips.clearButton.setFont( &fontWebdings );
-	outClips.clearButton.setFont( &fontWebdings );
 
 	addAndMakeVisible( log );
 	Logger::setCurrentLogger( &log );
@@ -89,7 +86,7 @@ void MainContentComponent::paint( Graphics& g )
 
 	g.setColour( Colours::white );
 	g.drawLine( getWidth() / 2, UNIT + MARGIN * 2,
-				getWidth() / 2, getHeight() - MARGIN - ( UNIT * 2 + MARGIN * 2 ) );			
+				getWidth() / 2, getHeight() - MARGIN - ( UNIT * 4 + MARGIN * 4 ) );			
 
 	}
 
@@ -156,16 +153,16 @@ void MainContentComponent::procButtonClicked()
 	thinking = true;
 
 	std::vector<std::string> files;
-	files.reserve( inClips.clips.size() );
-	for( auto &&i : inClips.clips )
+	files.reserve( inClips.getNumItems() );
+	for( int i = 0; i < inClips.getNumItems(); ++i )
 		{
-		files.emplace_back( i->getFile().getFullPathName().toStdString() );
+		files.emplace_back( inClips.getItem( i ).getFile().getFullPathName().toStdString() );
 		}
 		
 	//Process that shit
-	Logger::writeToLog( "\n\n\n[PROCESSING]" );
+	Logger::writeToLog( "[PROCESSING START]" );
 	std::vector<std::string> processed = altarProcess( files, command.getText().toStdString() );
-	Logger::writeToLog( "[PROCESSING COMPLETE]" );
+	Logger::writeToLog( "[PROCESSING END]\n\n" );
 
 	for( int i=0; i < processed.size(); ++i )
 		{

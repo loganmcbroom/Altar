@@ -1,5 +1,6 @@
 //Add spectral support
 //make c functions for modules
+//Launch AltarProcess as another thread
 
 //Parallel processing
 //okay we could have a cdpPar type of function that just starts the process and returns without waiting

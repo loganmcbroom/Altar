@@ -20,6 +20,7 @@
 //	 };
 
 std::vector<std::string> altarProcess( const std::vector<std::string> &inputs, const std::string &program );
+bool cdp( std::string command, const std::string & workingDir, std::vector<std::string> &outFiles );
 
 /*	Lua Interface
 
