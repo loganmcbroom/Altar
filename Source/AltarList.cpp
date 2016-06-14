@@ -3,10 +3,13 @@
 #define CLEAR_HEIGHT 25
 #define ERASE_WIDTH 25
 
+using namespace std;
+
 //Constructor
 template <typename T>
 AltarList<T>::AltarList()
-	: scroll( true )
+	: Button( "" )
+	, scroll( true )
 	, fontWebDings( "WebDings", FONT_SIZE, Font::bold  )
 	, clearButton( "r", &fontWebDings, CLEAR_HEIGHT * .67 )
 	{
@@ -30,18 +33,29 @@ AltarList<T>::~AltarList()
 
 //
 template<typename T>
-void AltarList<T>::addItem( T * item )
+shared_ptr<T> AltarList<T>::addItem( T * item )
 	{
-	items.emplace_back( item, new AltarButton( "r", &fontWebDings, ERASE_WIDTH / 2.0 ) );
-	addAndMakeVisible( items.back().first.get() );
-	addAndMakeVisible( items.back().second.get() );
-	items.back().second->addListener( this );
+	return insertItem( item, items.size() - 1 );
+	}
 
-	scroll.setRangeLimits( 0, float( getItemHeight() ) * float( items.size() ) + CLEAR_HEIGHT, NotificationType::dontSendNotification );
+template<typename T>
+shared_ptr<T> AltarList<T>::insertItem( T * item, int index )
+	{
+
+	if( index < 0 ) index = 0;
+	AltarButton * button = new AltarButton( "r", &fontWebDings, ERASE_WIDTH / 2.0 );
+	items.emplace( items.begin() + index, item, button );
+	addAndMakeVisible( item );
+	addAndMakeVisible( button );
+	button->addListener( this );
+
+	scroll.setRangeLimits( 0, float( getItemHeight() ) * float( items.size() ) + CLEAR_HEIGHT, 
+		NotificationType::dontSendNotification );
 	resized();
 
 	clearButton.toFront( false );
-	}
+	return items[index].first;
+}
 
 //
 template<typename T>
@@ -80,19 +94,32 @@ void AltarList<T>::clear()
 	items.clear();
 	}
 
-//
 template<typename T>
-T & AltarList<T>::getItem( int index )
+void AltarList<T>::swap( int a, int b )
 	{
-	return * items[index].first; 
+	iter_swap( items.begin() + a, items.begin() + b );
+	resized();
 	}
 
+//
+template<typename T>
+shared_ptr<T> AltarList<T>::getItem( int index )
+	{
+	return items[index].first; 
+	}
 
-// Private ======================================================================
+template<typename T>
+shared_ptr<T> AltarList<T>::getItem( Component * c )
+{
+	return getItem( getIndex( static_cast< T * >( c ) ) );
+}
+
+
+// Private -----------------------------------------------------------
 
 // Paint
-template <class T>
-void AltarList<T>::paint( Graphics &g )
+template<typename T>
+void AltarList<T>::paintButton( Graphics & g, bool, bool )
 	{
 	g.fillAll( Colour::fromHSV( 0, 0, .18, 1 ) );
 	}
@@ -162,3 +189,5 @@ void AltarList<T>::buttonClicked( Button * b )
 //Instantiate templates
 #include "AltarClip.h"
 template class AltarList< AltarClip >;
+#include "AltarThread.h"
+template class AltarList< AltarThread >;

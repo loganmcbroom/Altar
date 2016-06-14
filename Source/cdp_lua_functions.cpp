@@ -5,7 +5,7 @@
 
 #include "lua.hpp"
 
-#include "AltarProcess.h"
+#include "AltarThread.h"
 
 using namespace std;
 
@@ -46,7 +46,7 @@ static int lua_cdp( lua_State * L )
 		fullCommand += " " + getLuaString( i + 2, "Unknown argument passed to cdp is not a valid string" );
 		}
 	}
-
+	
 	//Get the directory to put files in. 
 	//We could generate files in the OS temp dir but if something breaks we need access
 	lua_getglobal( L, "workingDir" );
@@ -54,7 +54,9 @@ static int lua_cdp( lua_State * L )
 	lua_pop( L, 1 );
 
 	vector<string> outFiles;
-	if( ! cdp( fullCommand, workingDir, outFiles ) ) luaL_error( L, "Exiting lua: error from CDP" );
+	if( ! static_cast<AltarThread *>( Thread::getCurrentThread() )->cdp( fullCommand, workingDir, outFiles ) ) 
+	
+		luaL_error( L, "Exiting lua: error from CDP" );
 
 	for( int i = 0; i < outFiles.size(); ++i )
 		{

@@ -1,13 +1,11 @@
 //Add spectral support
 //make c functions for modules
-//Launch AltarProcess as another thread
 
 //Parallel processing
 //okay we could have a cdpPar type of function that just starts the process and returns without waiting
 //We could return an index into a list of running processes kept like generatedFiles
 //Have a function that takes an index and waits for that program to finish
 //and a function that waits for everything to finish
-//sounds doable
 
 #ifndef MAINCOMPONENT_H_INCLUDED
 #define MAINCOMPONENT_H_INCLUDED
@@ -15,7 +13,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "AltarButton.h"
 #include "AltarClipList.h"
-#include "AltarProcess.h"
+#include "AltarThreadList.h"
 #include "AltarLogger.h"
 #include "Defines.h"
 
@@ -23,6 +21,7 @@ class MainContentComponent  : public AudioAppComponent
 							, public ChangeListener
 							, public Button::Listener
 							, public FileDragAndDropTarget
+							, public DragAndDropContainer
 {
 public:
     MainContentComponent();
@@ -38,7 +37,6 @@ public:
 	void changeListenerCallback( ChangeBroadcaster* source ) override;
 
 	void buttonClicked( Button* button ) override;
-
 
 private:
 
@@ -59,12 +57,12 @@ private:
 	AltarButton openButton;
 	AltarButton procButton;
 	TextEditor command;
-	bool thinking = false;
 	
 	AudioFormatManager formatManager;
 	AudioTransportSource transportSource;
 
 	AltarClipList inClips, outClips;
+	AltarThreadList threads;
 
 	AltarLogger log;
 

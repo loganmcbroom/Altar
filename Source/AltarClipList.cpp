@@ -20,12 +20,12 @@ AltarClipList::~AltarClipList()
 	{
 	for( int i = 0; i < getNumItems(); ++i )
 		{
-		getItem( i ).getThumbnail().setSource( nullptr );
+		 getItem( i )->getThumbnail().setSource( nullptr );
 		}
 	}
 
 //Just how big is each clip?
-size_t AltarClipList::getItemHeight()
+int AltarClipList::getItemHeight()
 	{
 	return 50;
 	}
@@ -39,29 +39,61 @@ void AltarClipList::erase( AltarClip * item )
 //Erase the item at the given index from the list
 void AltarClipList::erase( unsigned int index )
 	{	
-	thumbnailCache.removeThumb( getItem( index).getThumbnail().getHashCode() );
-	AltarList<AltarClip>::erase( index );
+
+	thumbnailCache.removeThumb( getItem( index )->getThumbnail().getHashCode() );
+	AltarList::erase( index );
 	}
 
 //Erase all items
 void AltarClipList::clear()
 	{
-	AltarList<AltarClip>::clear();
+	AltarList::clear();
 	thumbnailCache.clear();
 	}
 
-//
-void AltarClipList::addClipFromFile( File &file, bool isOwner )
+void AltarClipList::addClipFromFile( const File & file, bool isOwner )
 	{
-	for( int i = 0; i < getNumItems(); ++i )
-		{
-		if( getItem( i ).audioFile.getTargetFile() == file )
-			{
-			Logger::writeToLog( "File is already on list" );
-			return;
-			}
+	insertClipFromFile( file, getNumItems() - 1, String(), isOwner );
+	}
+
+//
+void AltarClipList::insertClipFromFile( const File & file, size_t index, const String & name, bool isOwner )
+	{
+	insertItem( new AltarClip( file, formatManager, thumbnailCache, transportSource, isOwner, name ), index );
+	}
+
+bool AltarClipList::isInterestedInDragSource( const SourceDetails & dragSourceDetails )
+{
+	return dragSourceDetails.description == "Clip";
+}
+
+//This function sucks but it works
+void AltarClipList::itemDropped( const SourceDetails & s )
+	{
+	auto parent = static_cast< AltarClipList * >( s.sourceComponent->getParentComponent() );
+	auto item = static_cast< AltarClip * >( s.sourceComponent.get() );
+
+	//Figure out what slot this thing should be in	
+	int slot = s.localPosition.y / getItemHeight();
+	if( parent == this && slot > getIndex( item ) ) --slot;
+	if( slot > ( getNumItems() - 1 ) ) slot = ( getNumItems() - 1 );
+	if( slot < 0 ) slot = 0;
+	
+
+	if( parent != this )
+		{ 
+		//Copy the file out, delete the thing and recreate it in this container
+		File f( item->getFile().getParentDirectory().getFullPathName() + "/_altar_move.wav" );
+		item->getFile().copyFileTo( f );
+		insertClipFromFile( f, slot, item->getName(), false );
+		parent->erase( item );	
+		f.deleteFile();
 		}
-	addItem( new AltarClip( file, formatManager, thumbnailCache, transportSource, isOwner ) );
+	else
+		{
+		//Item came from this container so we juce need to move it
+		swap( getIndex( item ), slot );
+		}
 	}
 
 

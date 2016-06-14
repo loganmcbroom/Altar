@@ -8,13 +8,14 @@ Colour AltarClip::backgroundColour = Colour::fromHSV( 0, 0, .23, 1 );
 AltarClip * AltarClip::active = nullptr;
 
 
-AltarClip::AltarClip( File &_file
+AltarClip::AltarClip( const File & _file
 			, AudioFormatManager &_formatManager
 			, AudioThumbnailCache &_thumbnailCache
 			, AudioTransportSource &_transportSource
 			, bool isOwner
+			, const String & name
 			) 
-	: Button( _file.getFullPathName() )
+	: Button( name == String()? _file.getFileName() : name )
 	, transportSource( _transportSource )
 	, formatManager( _formatManager )
 	, audioFile( _file )
@@ -64,6 +65,15 @@ void AltarClip::resized()
 	saveButton.setBounds ( 0, s, s, s );
 	}
 
+void AltarClip::mouseDrag( const MouseEvent & event )
+	{
+	DragAndDropContainer * dragC = DragAndDropContainer::findParentDragContainerFor( this );
+	if (! dragC->isDragAndDropActive() ) 
+		{
+		dragC->startDragging( "Clip" , this );
+		}
+	}
+
 const File &AltarClip::getFile() { return audioFile.getFile(); }
 
 AudioThumbnail &AltarClip::getThumbnail() { return thumbnail; }
@@ -78,11 +88,11 @@ void AltarClip::paintButton(Graphics &g, bool isMouseOverButton, bool isButtonDo
 		);
 
 	g.setColour( PALETTE_1 );
-	juce::Rectangle<int> rect( getLocalBounds().withLeft( getHeight() ) );
-	thumbnail.drawChannels( g, rect, 0, thumbnail.getTotalLength(), 1.0f );
+	juce::Rectangle<int> rect( getLocalBounds().withLeft( getHeight() / 2 ) );
+	thumbnail.drawChannels( g, rect.reduced( 2 ), 0, thumbnail.getTotalLength(), 1.0f );
 
 	g.setColour( Colours::white );
-	g.drawText( audioFile.getTargetFile().getFileName(), 
+	g.drawText( getName(), 
 				juce::Rectangle<int>( getWidth() / 5.0 ,0, getWidth() * ( 4.0 / 5.0 ), getHeight() ).reduced( 3 ), 
 				Justification::topRight, true );
 	//g.drawText( String( static_cast<AltarClipList *>( getParentComponent() )->getIndex( this ) ),
@@ -122,6 +132,7 @@ void AltarClip::stopPressed()
 	transportSource.removeChangeListener( this );
 	active = nullptr;
 	transportSource.stop();
+	currentPosition.setRectangle( juce::Rectangle< float >(0,0,0,0) );
 	}
 
 void AltarClip::buttonClicked( Button *button )
@@ -142,13 +153,15 @@ void AltarClip::buttonClicked( Button *button )
 			File choice = chooser.getResult();
 			audioFile.getFile().copyFileTo( choice );
 			}
+		setName( chooser.getResult().getFileName() );
+		repaint();
 		}
 	}
 
 void AltarClip::timerCallback()
 	{
 	currentPosition.setRectangle( juce::Rectangle<float>( 
-		( transportSource.getCurrentPosition() *  float( getWidth() - getHeight() ) )
-		/ ( readerSource->getTotalLength() / readerSource->getAudioFormatReader()->sampleRate ) + getHeight(), 
+		( transportSource.getCurrentPosition() * float( getWidth() - getHeight() / 2 ) )
+		/ ( readerSource->getTotalLength() / readerSource->getAudioFormatReader()->sampleRate ) + getHeight() / 2, 
 		0, getToggleState()? 2:0, getHeight() ) );
 	}

@@ -18,11 +18,11 @@ MainContentComponent::MainContentComponent()
 
 	addAndMakeVisible( log );
 	Logger::setCurrentLogger( &log );
-	Logger::writeToLog( "Logger Active" );
 
 	addAndMakeVisible( &openButton );
 	addAndMakeVisible( &procButton );
 	addAndMakeVisible( &inClips    );
+	addAndMakeVisible( &threads	   );
 	addAndMakeVisible( &outClips   );
 	addAndMakeVisible( &command    );
 
@@ -42,7 +42,6 @@ MainContentComponent::MainContentComponent()
 	setSize( 1000, 700 );
 
 	formatManager.registerBasicFormats();
-
 
 	setAudioChannels(0, 2);
 	}
@@ -79,14 +78,18 @@ void MainContentComponent::releaseResources()
 	transportSource.releaseResources();
 	}
 
+#define LOG_HEIGHT  ( UNIT * 5 + MARGIN * 4 )
+
 //Paint
 void MainContentComponent::paint( Graphics& g )
 	{
     g.fillAll (BACKGROUND_COLOUR);
 
 	g.setColour( Colours::white );
-	g.drawLine( getWidth() / 2, UNIT + MARGIN * 2,
-				getWidth() / 2, getHeight() - MARGIN - ( UNIT * 4 + MARGIN * 4 ) );			
+	g.drawLine( getWidth() / 3, UNIT + MARGIN * 2,
+				getWidth() / 3, getHeight() - MARGIN - ( LOG_HEIGHT + MARGIN ), 2 );		
+	g.drawLine( getWidth() * 2 / 3, UNIT + MARGIN * 2,
+				getWidth() * 2 / 3, getHeight() - MARGIN - ( LOG_HEIGHT + MARGIN ), 2 );		
 
 	}
 
@@ -96,22 +99,30 @@ void MainContentComponent::resized()
 	openButton.setBounds(MARGIN,			MARGIN,	UNIT, UNIT);
 	procButton.setBounds(MARGIN * 2 + UNIT, MARGIN, UNIT, UNIT);
 
+	
+
 	inClips.setBounds( 
 		MARGIN, 
 		MARGIN * 2 + UNIT, 
-		getWidth() / 2 - 2 * MARGIN, 
-		getHeight() - ( UNIT + MARGIN * 3 ) - ( UNIT * 4 + MARGIN * 4 ) );
-	outClips.setBounds( 
-		getWidth() / 2 + MARGIN, 
+		getWidth() / 3 - 2 * MARGIN, 
+		getHeight() - ( UNIT + MARGIN * 3 ) - ( LOG_HEIGHT + MARGIN ) );
+	threads.setBounds( 
+		getWidth() / 3 + MARGIN, 
 		MARGIN * 2 + UNIT, 
-		getWidth() / 2 - 2 * MARGIN, 
-		getHeight() - ( UNIT + MARGIN * 3 ) - ( UNIT * 4 + MARGIN * 4 ) );
+		getWidth() / 3 - 2 * MARGIN, 
+		getHeight() - ( UNIT + MARGIN * 3 ) - ( LOG_HEIGHT + MARGIN ) );
+	outClips.setBounds( 
+		( getWidth() / 3 ) * 2 + MARGIN, 
+		MARGIN * 2 + UNIT, 
+		getWidth() / 3 - 2 * MARGIN, 
+		getHeight() - ( UNIT + MARGIN * 3 ) - ( LOG_HEIGHT + MARGIN ) );
+
 
 	command.setBounds( MARGIN * 3 + UNIT * 2, MARGIN, getWidth() - ( MARGIN * 4 + UNIT * 2 ), UNIT );
 
 	Rectangle<int> errorRect( 
-		MARGIN, getHeight() - ( UNIT * 4 + MARGIN * 4 ), 
-		getWidth() - MARGIN * 2, UNIT * 4 + MARGIN *3 );
+		MARGIN, getHeight() - ( LOG_HEIGHT + MARGIN ), 
+		getWidth() - MARGIN * 2, LOG_HEIGHT );
 
 	log.setBounds( errorRect );
 	}
@@ -147,32 +158,22 @@ void MainContentComponent::openButtonClicked()
 //Processes input files with the supplied lua script
 void MainContentComponent::procButtonClicked() 
 	{
-	if( AltarClip::active != nullptr ) AltarClip::active->stopPressed();
-	openButton.setEnabled( false );
-	procButton.setEnabled( false );
-	thinking = true;
+	std::function< void( std::vector< File > & ) > retrieveFiles = [&]( std::vector< File > & files )
+		{
+		for( auto & i : files )
+			{
+			outClips.addClipFromFile( i, false );
+			}
+		};
 
-	std::vector<std::string> files;
-	files.reserve( inClips.getNumItems() );
+	std::vector<String> inFiles;
+	inFiles.reserve( inClips.getNumItems() );
 	for( int i = 0; i < inClips.getNumItems(); ++i )
 		{
-		files.emplace_back( inClips.getItem( i ).getFile().getFullPathName().toStdString() );
+		inFiles.emplace_back( inClips.getItem( i )->getFile().getFullPathName().toStdString() );
 		}
 		
-	//Process that shit
-	Logger::writeToLog( "[PROCESSING START]" );
-	std::vector<std::string> processed = altarProcess( files, command.getText().toStdString() );
-	Logger::writeToLog( "[PROCESSING END]\n\n" );
-
-	for( int i=0; i < processed.size(); ++i )
-		{
-		outClips.addClipFromFile( File( String( processed[i] ) ), true );
-		}
-
-	thinking = false;
-	openButton.setEnabled( true );
-	procButton.setEnabled( true );
-	setMouseCursor( MouseCursor::NormalCursor );
+	threads.addThread( command.getText(), retrieveFiles, inFiles );
 	}
 
 //Called when files were dropped only the program from
