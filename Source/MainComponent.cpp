@@ -161,12 +161,15 @@ void MainContentComponent::procButtonClicked()
 	std::function< void( std::vector< File > & ) > retrieveFiles = [&]( std::vector< File > & files )
 		{
 		for( auto & i : files )
-			{
 			outClips.addClipFromFile( i, false );
-			}
 		};
 
 	std::vector<String> inFiles;
+	if( inClips.getNumItems() == 0 )
+		{
+		Logger::writeToLog( "You probably should load some audio first" );
+		return;
+		}
 	inFiles.reserve( inClips.getNumItems() );
 	for( int i = 0; i < inClips.getNumItems(); ++i )
 		{

@@ -17,7 +17,7 @@ public:
 	const File & getFile( int index );
 	size_t getNumFiles();
 
-	bool cdp( std::string & command, const std::string & workingDir, std::vector<std::string> &outFiles );
+	bool cdp( std::string & command, const std::string & info, std::vector<std::string> &outFiles );
 
 private:
 	void log( const String & s );
@@ -25,6 +25,8 @@ private:
 
 	void paint( Graphics & g ) override;
 	void run() override;
+	void outFileTypeLookup( std::vector<std::string> & output, const std::vector<std::string> genFiles, 
+							const std::string & command, const std::string & info );
 
 	std::function< void( std::vector< File > & ) > callback;
 	std::vector< std::unique_ptr<TemporaryFile> > inFiles;
@@ -33,6 +35,7 @@ private:
 	lua_State * L;
 	int64 startTime;
 	int currentUID = 0;
+	std::string cdpDir, workingDir;
 
 	static CriticalSection mutex;
 	};

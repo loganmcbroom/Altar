@@ -1,5 +1,7 @@
-//Add spectral support
-//make c functions for modules
+//Crashing when closing program while thread is running
+
+//Handle modal processes, macros maybe?
+//Main data to get accross is different modes have different inputs following
 
 //Parallel processing
 //okay we could have a cdpPar type of function that just starts the process and returns without waiting
