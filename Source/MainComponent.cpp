@@ -1,5 +1,7 @@
 #include "MainComponent.h"
 
+#include <fstream>
+
 //Constructor
 MainContentComponent::MainContentComponent()
 	: fontWingdings	( "Wingdings", FONT_SIZE, Font::bold  )
@@ -44,6 +46,20 @@ MainContentComponent::MainContentComponent()
 	formatManager.registerBasicFormats();
 
 	setAudioChannels(0, 2);
+
+	if( ! File::getCurrentWorkingDirectory().getChildFile( "Settings.lua" ).exists() )
+		{
+		FileChooser chooser( "Select your _cdprogs directory (it should be in cdprX/_cdp)" );
+		if( ! chooser.browseForDirectory() 
+		 || ! chooser.getResult().exists()
+		 || ! chooser.getResult().getChildFile( "modify.exe" ).exists() )
+			Logger::writeToLog( "Things won't work until you pick the correct _cdprogs directory" );
+		else
+			{
+			std::ofstream settingsFile( "Settings.lua" ); 
+			settingsFile << "cdpDir = \"" << chooser.getResult().getFullPathName().replace( "\\", "/" ) << "\"";
+			}
+		}
 	}
 
 //Destructor
@@ -161,15 +177,12 @@ void MainContentComponent::procButtonClicked()
 	std::function< void( std::vector< File > & ) > retrieveFiles = [&]( std::vector< File > & files )
 		{
 		for( auto & i : files )
-			outClips.addClipFromFile( i, false );
+			{
+			outClips.addClipFromFile( i, true );
+			}
 		};
 
 	std::vector<String> inFiles;
-	if( inClips.getNumItems() == 0 )
-		{
-		Logger::writeToLog( "You probably should load some audio first" );
-		return;
-		}
 	inFiles.reserve( inClips.getNumItems() );
 	for( int i = 0; i < inClips.getNumItems(); ++i )
 		{

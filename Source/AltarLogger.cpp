@@ -3,10 +3,15 @@
 
 AltarLogger::AltarLogger()
 	: TextEditor( )
+	, fontWebDings( "WebDings", FONT_SIZE, Font::bold )
+	, clearButton( "r", &fontWebDings, 20 )
 	{
 	setReadOnly( true );
 	setCaretVisible( false );
 	setMultiLine( true, true );
+
+	addAndMakeVisible( &clearButton );
+	clearButton.addListener( this );
 	}
 
 AltarLogger::~AltarLogger() 
@@ -16,6 +21,7 @@ AltarLogger::~AltarLogger()
 void AltarLogger::logMessage( const String &message )
 	{
 	//insertTextAtCaret( Time::getCurrentTime().formatted( "(%I:%M:%S) " ) );
+	setCaretPosition( getText().length() );
 	insertTextAtCaret( message + "\n" );
 
 	//Make sure we don't go too crazy with this thing... A long program could output a ridiculous amount of text.
@@ -27,4 +33,15 @@ void AltarLogger::logMessage( const String &message )
 void AltarLogger::paint( Graphics & g )
 	{
 	TextEditor::paint( g );
+	}
+
+void AltarLogger::resized()
+	{
+	TextEditor::resized();
+	clearButton.setBounds( getWidth() - 25, 0, 25, 25 );
+	}
+
+void AltarLogger::buttonClicked( Button * b )
+	{
+	TextEditor::clear();
 	}

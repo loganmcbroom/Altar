@@ -1,13 +1,13 @@
-//Crashing when closing program while thread is running
+//replace shortened module names with full
+//handle inverse flag issue
+//Scan through lua mappings for unimplemented multi out procs
+//Create clip list file copies in workspace?
 
-//Handle modal processes, macros maybe?
-//Main data to get accross is different modes have different inputs following
+//Altar lua functions
+//Something for generating a text file of a string
+//Something for generating a file name with a given file extension
 
-//Parallel processing
-//okay we could have a cdpPar type of function that just starts the process and returns without waiting
-//We could return an index into a list of running processes kept like generatedFiles
-//Have a function that takes an index and waits for that program to finish
-//and a function that waits for everything to finish
+
 
 #ifndef MAINCOMPONENT_H_INCLUDED
 #define MAINCOMPONENT_H_INCLUDED
@@ -32,12 +32,9 @@ public:
     void prepareToPlay( int samplesPerBlockExpected, double sampleRate ) override;
     void getNextAudioBlock( const AudioSourceChannelInfo& bufferToFill ) override;
     void releaseResources() override;
-
-    //==============================================================================
     void paint (Graphics& g) override;
     void resized() override;
 	void changeListenerCallback( ChangeBroadcaster* source ) override;
-
 	void buttonClicked( Button* button ) override;
 
 private:
@@ -50,7 +47,6 @@ private:
 	bool isInterestedInFileDrag(const StringArray &files)		{ return true; }
 	void fileDragEnter(const StringArray &files, int x, int y)	{ openButton.setButtonText( "1" ); }
 	void fileDragExit(const StringArray &files)					{ openButton.setButtonText( "0" ); }
-
 
 	Font fontWingdings;
 	Font fontWebdings;
