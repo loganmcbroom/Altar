@@ -1,4 +1,4 @@
-I don't want to deal with making this pleasant to compile sorry about that.
+I don't want to deal with making this pleasant to compile sorry about that. Requires lua, project file is set up to use a static lua build.
 
 
 This is a non-realtime programmatic audio processing system. 
