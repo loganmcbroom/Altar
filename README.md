@@ -1,3 +1,6 @@
+I don't want to deal with making this pleasant to compile sorry about that.
+
+
 This is a non-realtime programmatic audio processing system. 
 It is built on Trevor Wishart's CDP tools.
 MIT license and all that. You're free to do anything with this besides sell it, if it does something bad I'm not responsible.
@@ -75,11 +78,4 @@ Here is a function for putting those mono files back into stereo files:
 	end
 If you are using channels beyond stereo you are competent enough to figure it out.
 Audio at different sample rates? Use housekeep_respec( 1, 48000, files ).
-
-===================================================================
-
-I worked really hard on this so if you make something neat send me a copy! 
-And if you have any CDP questions try the forum here: http://unstablesound.net/cdpforum/index.php?board=3.0
-I check it a lot.
- - Logan McBroom
 
