@@ -14,13 +14,13 @@ Navigate to the cdpr7 directory and select cdpr7/_cdp/_cdprogs
 If neither of us messed it up, Altar is ready to go
 
 You will also need:
-	If you want to spend more than a quick sec looking at this you'll need a code editor of some kind for Lua.
-	I rec notepad++. Once installed and opened you can hit Language->L->Lua for proper highlighting. 
-	It also has some nice color options in Settings->Style Configurator (I rec Solarized).
+If you want to spend more than a quick sec looking at this you'll need a code editor of some kind for Lua.
+I rec notepad++. Once installed and opened you can hit Language->L->Lua for proper highlighting. 
+It also has some nice color options in Settings->Style Configurator (I rec Solarized).
 	
-	You'll need audio of some sort. 
-	Record youself saying your name if you can't think of anything.
-	If you need some quality sources send me an email.
+You'll need audio of some sort. 
+Record youself saying your name if you can't think of anything.
+If you need some quality sources send me an email.
 
 Usage==============================================================
 
