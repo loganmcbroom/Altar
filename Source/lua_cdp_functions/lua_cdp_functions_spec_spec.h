@@ -16,18 +16,18 @@ LINEAR_MULTI_NPROC_TYPE_FUNC_2( spec, magnify, 2, 0, WAV_TYPE, 1 );
 //-----------------------------------------------------------------------
 // SpecNu
 //-----------------------------------------------------------------------
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, clean, 2, 0, WAV_TYPE, 2 );
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, rand, 0, 2, WAV_TYPE, 1 );
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, clean, 2, 0, ANA_TYPE, 2 );
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, rand, 0, 2, ANA_TYPE, 1 );
 LUA_CDP_MODAL_MULTI( lua_cdp_specnu_remove, {
-	case 1: LINEAR_MULTI_PROC( "specnu", "remove 1", 4, 0 );
-	case 2: LINEAR_MULTI_PROC( "specnu", "remove 2", 4, 0 );
+	case 1: LINEAR_MULTI_PROC_TYPE( "specnu", "remove 1", 4, 0, ANA_TYPE );
+	case 2: LINEAR_MULTI_PROC_TYPE( "specnu", "remove 2", 4, 0, ANA_TYPE );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_specnu_slice, {
 	case 1: {
 		int numFiles = lua_tointeger( L, -2 );
 		return lua_multi_proc( L, 2, 0, [numFiles]( lua_State * L )
 			{ 
-			lua_pushpairs( L, { {"specnu", 1}, {"slice 1", 2}, {WAV_TYPE, 4} } ); 
+			lua_pushpairs( L, { {"specnu", 1}, {"slice 1", 2}, {ANA_TYPE, 4} } ); 
 			return cdp( L, {outTrancate, numFiles} );
 			});
 		}
@@ -35,7 +35,7 @@ LUA_CDP_MODAL_MULTI( lua_cdp_specnu_slice, {
 		int numFiles = lua_tointeger( L, -2 );
 		return lua_multi_proc( L, 2, 0, [numFiles]( lua_State * L )
 			{ 
-			lua_pushpairs( L, { {"specnu", 1}, {"slice 2", 2}, {WAV_TYPE, 4} } ); 
+			lua_pushpairs( L, { {"specnu", 1}, {"slice 2", 2}, {ANA_TYPE, 4} } ); 
 			return cdp( L, {outTrancate, numFiles} );
 			});
 		}
@@ -43,7 +43,7 @@ LUA_CDP_MODAL_MULTI( lua_cdp_specnu_slice, {
 		int numFiles = lua_tointeger( L, -2 );
 		return lua_multi_proc( L, 2, 0, [numFiles]( lua_State * L )
 			{ 
-			lua_pushpairs( L, { {"specnu", 1}, {"slice 3", 2}, {WAV_TYPE, 4} } ); 
+			lua_pushpairs( L, { {"specnu", 1}, {"slice 3", 2}, {ANA_TYPE, 4} } ); 
 			return cdp( L, {outTrancate, numFiles} );
 			});
 		}
@@ -57,23 +57,23 @@ LUA_CDP_MODAL_MULTI( lua_cdp_specnu_slice, {
 	case 5: {
 		return lua_multi_proc( L, 2, 0, []( lua_State * L )
 			{ 
-			lua_pushpairs( L, { {"specnu", 1}, {"slice 5", 2}, {WAV_TYPE, 4} } ); 
+			lua_pushpairs( L, { {"specnu", 1}, {"slice 5", 2}, {ANA_TYPE, 4} } ); 
 			return cdp( L, {outUnknownTruncate, 0} );
 			});
 		}
 	}) 
 int lua_cdp_specgrids_specgrids( lua_State * L )
 	{
-	int numFiles = lua_tointeger( L, -2 );
+	int numFiles = lua_tointeger( L, 1 );
 	return lua_multi_proc( L, 2, 0, [numFiles]( lua_State * L )
 		{
-		lua_pushpairs( L, { {"specgrids", 1}, {"specgrids", 2}, {WAV_TYPE, 4} } );
-		return cdp( L, {outTrancate, numFiles} );
+		lua_pushpairs( L, { {"specgrids", 1}, {"specgrids", 2}, {ANA_TYPE, 4} } );
+		return cdp( L, {specNuSpecgrids, numFiles} );
 		});
 	}
 
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, squeeze, 2, 0, WAV_TYPE, 1 );
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, subtract, 2, 0, WAV_TYPE, 2 );
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, squeeze, 2, 0, ANA_TYPE, 1 );
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( specnu, subtract, 2, 0, ANA_TYPE, 2 );
 
 //-----------------------------------------------------------------------
 // SpecInfo

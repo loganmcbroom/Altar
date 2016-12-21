@@ -45,7 +45,7 @@ LUA_CDP_MODAL_MULTI( lua_cdp_housekeep_chans, {
 	case 1: return lua_multi_proc( L, 1, 0, []( lua_State * L )
 			{ 
 			lua_pushpairs( L, { {"housekeep", 1}, {"chans 1", 2} } );
-			return cdp( L, { inChannel, lua_tonumber( L, 4 ) } );
+			return cdp( L, { inChannelSingle, lua_tonumber( L, 4 ) } );
 			});
 	case 2: return lua_multi_proc( L, 0, 0, []( lua_State * L )
 			{ 
@@ -59,9 +59,11 @@ LUA_CDP_MODAL_MULTI( lua_cdp_housekeep_chans, {
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_housekeep_copy, {
 	case 1: LINEAR_MULTI_PROC( "housekeep", "copy 1", 0, 0 );
-	case 2: return luaL_error( L, "Housekeep copy 2 isn't supported because it creates files \
-in the directory housekeep.exe is launched from. \
-This is a huge pain to deal with and I'm not going to." );
+	case 2: return lua_multi_proc( L, 1, 0, []( lua_State * L ){
+		int numOuts = lua_tointeger( L, 1 );
+		lua_pushpairs( L, { {"housekeep", 1}, {"copy 2", 2} } );
+		return cdp( L, {housekeepCopy, numOuts} );
+		});
 	})
 LUA_CDP_MULTI( lua_cdp_housekeep_deglitch, 5, 1,{
 	lua_pushpairs( L,
@@ -88,21 +90,13 @@ LUA_CDP_MODAL_MULTI( lua_cdp_housekeep_extract, {
 	case 3: LINEAR_MULTI_PROC( "housekeep", "extract 3", 0, 4 );
 	case 4: LINEAR_MULTI_PROC( "housekeep", "extract 4", 1, 0 );
 	case 5: return luaL_error( L, "Housekeep extract 5 is no longer supported by the CDP" );
-	case 6: return lua_multi_proc( L, 8, 0, []( lua_State * L )
+	case 6: return lua_multi_proc( L, 7, 0, []( lua_State * L )
 			{ 
-			lua_pushpairs( L, { {"housekeep", 1}, {"extract 6", 2} } );
+			lua_pushpairs( L, { {"housekeep", 1}, {"extract 6", 2}, {TXT_TYPE, 4} } );
 			return cdp( L );
 			});
 	})
-/*LUA_CDP_MULTI( lua_cdp_housekeep_gate, 0, 1,{
-	lua_pushpairs( L,
-		{
-		{ "housekeep", 1 },
-		{ "gate", 2 },
-		{ WAV_TYPE, 4 }
-		});
-	return cdp( L );
-	})*/ LUA_CDP_UNSUPPORTED( lua_cdp_housekeep_gate )
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( housekeep, gate, 0, 1, WAV_TYPE, 1 )
 LUA_CDP_MULTI( lua_cdp_gate_gate, 2, 0,{					// file | mode | gatelevel
 	lua_insert( L, 2 ); // file | gatelevel | mode
 	lua_insert( L, 1 );	// mode | file | gatelevel 

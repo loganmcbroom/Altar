@@ -34,12 +34,7 @@ MainContentComponent::MainContentComponent()
 	command.setMultiLine( true, false );
 	command.setReturnKeyStartsNewLine( true );
 	command.setFont( fontRoboto );
-
-	#ifdef DEBUG
-	command.setText( "Debug/Data/Altar.lua" );
-	#else
 	command.setText( "Altar.lua" );
-	#endif
 
 	setSize( 1000, 700 );
 

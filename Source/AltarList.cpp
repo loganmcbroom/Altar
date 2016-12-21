@@ -35,13 +35,12 @@ AltarList<T>::~AltarList()
 template<typename T>
 shared_ptr<T> AltarList<T>::addItem( T * item )
 	{
-	return insertItem( item, items.size() - 1 );
+	return insertItem( item, items.size() );
 	}
 
 template<typename T>
 shared_ptr<T> AltarList<T>::insertItem( T * item, int index )
 	{
-
 	if( index < 0 ) index = 0;
 	AltarButton * button = new AltarButton( "r", &fontWebDings, ERASE_WIDTH / 2.0 );
 	items.emplace( items.begin() + index, item, button );

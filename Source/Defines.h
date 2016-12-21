@@ -3,8 +3,8 @@
 #define MARGIN 10
 #define UNIT 40
 #define FONT_SIZE ( UNIT.0 * (26.0 / 40.0) )
-
-#define BACKGROUND_COLOUR Colour::fromHSV(0,0,.13,1)
+//#define BACKGROUND_COLOUR Colour::fromRGB( 7, 36, 42 )
+#define BACKGROUND_COLOUR Colour::fromHSV(0,0,.13,1) 
 #define TEXT_COLOUR Colours::white
 
 #define PALETTE_1 Colour::fromHSV( .5, .7, .5, 1 )

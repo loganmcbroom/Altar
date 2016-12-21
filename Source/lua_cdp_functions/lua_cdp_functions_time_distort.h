@@ -8,7 +8,7 @@ static int lua_cdp_distort_cyclecnt( lua_State * L )
 	return lua_multi_proc( L, 0, 0, []( lua_State * L )
 		{  
 		lua_pushpairs( L, { {"distort", 1}, {"cyclecnt", 2} } );
-		return cdp( L );
+		return cdp( L, {cmdInfo, 0} );
 		} );
 	}
 LUA_CDP_MODAL_MULTI( lua_cdp_distort_delete, {
@@ -43,9 +43,9 @@ LUA_CDP_MODAL_MULTI( lua_cdp_distort_overload, {
 	})
 LINEAR_MULTI_PROC_FUNC( lua_cdp_distort_pitch, "distort", "pitch", 1, 2 )
 LUA_CDP_MODAL_MULTI( lua_cdp_distort_pulsed, {
-	case 1: LINEAR_MULTI_PROC( "distort", "pulsed 1", 8, 2 );
-	case 2: LINEAR_MULTI_PROC( "distort", "pulsed 2", 9, 2 );
-	case 3: LINEAR_MULTI_PROC( "distort", "pulsed 3", 9, 2 );
+	case 1: LINEAR_MULTI_PROC( "distort", "pulsed 1", 9, 2 );
+	case 2: LINEAR_MULTI_PROC( "distort", "pulsed 2", 10, 2 );
+	case 3: LINEAR_MULTI_PROC( "distort", "pulsed 3", 10, 2 );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_distort_reform, {
 	case 1: LINEAR_MULTI_PROC( "distort", "reform 1", 0, 0 );

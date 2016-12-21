@@ -135,7 +135,7 @@ void register_lua_cdp_functions_blur( lua_State * L )
 	lua_register( L, "blur_drunk",		lua_cdp_blur_drunk		);
 	lua_register( L, "blur_noise",		lua_cdp_blur_noise		);
 	lua_register( L, "blur_scatter",	lua_cdp_blur_scatter	);
-	lua_register( L, "blur_selfism",	lua_cdp_selfism_selfism );
+	lua_register( L, "blur_selfsim",	lua_cdp_selfism_selfism );
 	lua_register( L, "blur_shuffle",	lua_cdp_blur_shuffle	);
 	lua_register( L, "blur_spread",		lua_cdp_blur_spread		);
 	lua_register( L, "blur_suppress",	lua_cdp_blur_suppress	);

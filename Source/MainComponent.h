@@ -1,14 +1,3 @@
-//replace shortened module names with full
-//handle inverse flag issue
-//Scan through lua mappings for unimplemented multi out procs
-//Create clip list file copies in workspace?
-
-//Altar lua functions
-//Something for generating a text file of a string
-//Something for generating a file name with a given file extension
-
-
-
 #ifndef MAINCOMPONENT_H_INCLUDED
 #define MAINCOMPONENT_H_INCLUDED
 

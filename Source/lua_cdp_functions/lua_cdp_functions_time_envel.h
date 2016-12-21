@@ -78,26 +78,26 @@ LUA_CDP_MODAL_MULTI( lua_cdp_envel_replace, {
 	case 4: LINEAR_MULTI_NPROC_TYPE( "envel", "replace 4", 1, 0, WAV_TYPE, 2 );
 	})
 
-#define ENVEL_15_FUNC( proc, vp1, vp2, vp3, flags ) LUA_CDP_MODAL_MULTI( lua_cdp_envel_ ## proc, {\
-	case 1:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 1",  vp1 + 0, flags, TXT_TYPE );\
-	case 2:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 2",  vp1 + 0, flags, TXT_TYPE );\
-	case 3:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 3",  vp1 + 1, flags, TXT_TYPE );\
-	case 4:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 4",  vp1 + 1, flags, TXT_TYPE );\
-	case 5:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 5",  vp1 + 1, flags, TXT_TYPE );\
-	case 6:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 6",  vp1 + 1, flags, TXT_TYPE );\
-	case 7:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 7",  vp1 + 1, flags, TXT_TYPE );\
-	case 8:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 8",  vp1 + 2, flags, TXT_TYPE );\
-	case 9:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 9",  vp1 + 2, flags, TXT_TYPE );\
-	case 10: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 10", vp1 + 2, flags, TXT_TYPE );\
-	case 11: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 11", vp1 + 2, flags, TXT_TYPE );\
-	case 12: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 12", vp1 + 3, flags, TXT_TYPE );\
-	case 13: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 13", vp2 + 4, flags, TXT_TYPE );\
-	case 14: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 14", vp3 + 0, flags, TXT_TYPE );\
-	case 15: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 15", vp3 + 2, flags, TXT_TYPE );\
+#define ENVEL_15_FUNC( proc, vp1, vp2, vp3, flags, outType ) LUA_CDP_MODAL_MULTI( lua_cdp_envel_ ## proc, {\
+	case 1:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 1",  vp1 + 0, flags, outType );\
+	case 2:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 2",  vp1 + 0, flags, outType );\
+	case 3:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 3",  vp1 + 1, flags, outType );\
+	case 4:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 4",  vp1 + 1, flags, outType );\
+	case 5:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 5",  vp1 + 1, flags, outType );\
+	case 6:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 6",  vp1 + 1, flags, outType );\
+	case 7:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 7",  vp1 + 1, flags, outType );\
+	case 8:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 8",  vp1 + 2, flags, outType );\
+	case 9:  LINEAR_MULTI_PROC_TYPE( "envel", #proc " 9",  vp1 + 2, flags, outType );\
+	case 10: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 10", vp1 + 2, flags, outType );\
+	case 11: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 11", vp1 + 2, flags, outType );\
+	case 12: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 12", vp1 + 3, flags, outType );\
+	case 13: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 13", vp2 + 4, flags, outType );\
+	case 14: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 14", vp3 + 0, flags, outType );\
+	case 15: LINEAR_MULTI_PROC_TYPE( "envel", #proc " 15", vp3 + 2, flags, outType );\
 	})
-ENVEL_15_FUNC( replot,	1, 2, 1, 1 )
-ENVEL_15_FUNC( reshape, 0, 1, 0, 0 )
-ENVEL_15_FUNC( warp,	1, 2, 1, 0 )
+ENVEL_15_FUNC( replot,	1, 2, 1, 1, TXT_TYPE )
+ENVEL_15_FUNC( reshape, 0, 1, 0, 0, BRK_TYPE )
+ENVEL_15_FUNC( warp,	1, 2, 1, 0, WAV_TYPE )
 
 LINEAR_MULTI_NPROC_TYPE_FUNC_2( envel, scaled, 0, 0, WAV_TYPE, 2 )
 LINEAR_MULTI_NPROC_TYPE_FUNC_2( envel, swell, 2, 0, WAV_TYPE, 1 )

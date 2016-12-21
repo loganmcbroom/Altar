@@ -53,7 +53,7 @@ void AltarClipList::clear()
 
 void AltarClipList::addClipFromFile( const File & file, bool isOwner )
 	{
-	insertClipFromFile( file, getNumItems() - 1, String(), isOwner );
+	insertClipFromFile( file, getNumItems(), String(), isOwner );
 	}
 
 //

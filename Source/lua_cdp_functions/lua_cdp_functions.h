@@ -21,8 +21,13 @@ enum cdpOutputType
 	inTruncate,			//Same as outTruncate but uses the input file name, whoever did this is a little butter boy
 	
 	//Past here is custom, unlikely to happen again
+	sfeditCutmany,
 	inChannelSingle,	//For the discerning rock brained grease sucker
-	synthSpectra
+	synthSpectra,
+	repitchGetpitch,
+	housekeepCopy,
+	modifyShudder,
+	specNuSpecgrids
 	};
 typedef std::pair< cdpOutputType, int > cdpInfo_t;
 

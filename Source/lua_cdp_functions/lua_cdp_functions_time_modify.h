@@ -80,7 +80,11 @@ int lua_cdp_modify_sausage( lua_State * L )
 LINEAR_MULTI_PROC_FUNC( lua_cdp_modify_scaledpan, "modify", "scaledpan", 1, 1 )
 int lua_cdp_modify_shudder( lua_State * L )
 	{
-	return luaL_error( L, "lua_cdp_modify_shudder is unsupported due to bad filename handling in the cdp module" );
+	return lua_multi_proc( L, 8, 0, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"modify", 1}, {"shudder", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {modifyShudder, 0} );
+		});
 	}
 LUA_CDP_MODAL_MULTI( lua_cdp_modify_space, {
 	case 1: LINEAR_MULTI_PROC( "modify", "space 1", 1, 1 );
@@ -110,11 +114,11 @@ LINEAR_MULTI_PROC_FUNC( lua_cdp_modify_stack, "modify", "stack", 6, 1 );
 
 void register_lua_cdp_functions_modify( lua_State * L )
 	{
-	lua_register( L, "modify_brassage",	lua_cdp_modify_brassage		);
-	lua_register( L, "modify_convolve",	lua_cdp_modify_convolve		);
+	lua_register( L, "modify_brassage",		lua_cdp_modify_brassage		);
+	lua_register( L, "modify_convolve",		lua_cdp_modify_convolve		);
 	lua_register( L, "modify_findpan",		lua_cdp_modify_findpan		);
-	lua_register( L, "modify_loudness",	lua_cdp_modify_loudness		);
-	lua_register( L, "modify_newdelay",	lua_cdp_newdelay_newdelay	);
+	lua_register( L, "modify_loudness",		lua_cdp_modify_loudness		);
+	lua_register( L, "modify_newdelay",		lua_cdp_newdelay_newdelay	);
 	lua_register( L, "modify_phase",		lua_cdp_phase_phase			);
 	lua_register( L, "modify_radical",		lua_cdp_modify_radical		);
 	lua_register( L, "modify_revecho",		lua_cdp_modify_revecho		);

@@ -95,9 +95,10 @@ void AltarClip::paintButton(Graphics &g, bool isMouseOverButton, bool isButtonDo
 	g.drawText( getName(), 
 				juce::Rectangle<int>( getWidth() / 5.0 ,0, getWidth() * ( 4.0 / 5.0 ), getHeight() ).reduced( 3 ), 
 				Justification::topRight, true );
-	//g.drawText( String( static_cast<AltarClipList *>( getParentComponent() )->getIndex( this ) ),
-	//				juce::Rectangle<int>( getHeight(), 0, getWidth() / 5.0, getHeight() ).reduced( 3 ),
-	//				Justification::topLeft );
+	auto reader = readerSource->getAudioFormatReader();
+	g.drawText( String( reader->lengthInSamples / reader->sampleRate ),
+					juce::Rectangle<int>( getHeight() / 2.0, 0, getWidth() / 5.0, getHeight() ).reduced( 3 ),
+					Justification::topLeft );
 	}
 
 void AltarClip::changeListenerCallback( ChangeBroadcaster* source )

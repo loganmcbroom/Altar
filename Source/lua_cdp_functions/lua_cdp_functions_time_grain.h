@@ -7,7 +7,7 @@ LUA_CDP_UNSUPPORTED( lua_cdp_grain_assess )
 LUA_CDP_UNSUPPORTED( lua_cdp_grain_count )
 LINEAR_MULTI_PROC_FUNC_2( grain, duplicate, 1, 5 )
 LINEAR_MULTI_NPROC_TYPE_FUNC_2( grain, find, 1, 5, TXT_TYPE, 1 )
-LINEAR_MULTI_PROC_FUNC_2( grain, extend, 4, 0 )
+LINEAR_MULTI_PROC_FUNC_2( grainex, extend, 4, 0 )
 LUA_CDP_MODAL_MULTI( lua_cdp_grain_grev, {
 	case 1: LINEAR_MULTI_PROC( "grain", "grev 1", 3, 0 );
 	case 2: LINEAR_MULTI_PROC( "grain", "grev 2", 4, 0 );
@@ -19,8 +19,8 @@ LUA_CDP_MODAL_MULTI( lua_cdp_grain_grev, {
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_newtex_newtex, {
 	case 1: LINEAR_MULTI_PROC( "newtex", "newtex 1", 6, 9 );
-	case 2: NONLINEAR_PROC( "newtex", "newtex 2", 6, 9, WAV_TYPE ); 
-	case 3: NONLINEAR_PROC( "newtex", "newtex 3", 6, 9, WAV_TYPE ); 
+	case 2: NONLINEAR_PROC( newtex, newtex 2, 6, 9, WAV_TYPE ); 
+	case 3: NONLINEAR_PROC( newtex, newtex 3, 6, 9, WAV_TYPE ); 
 	})
 LINEAR_MULTI_PROC_FUNC_2( grain, noise_extend, 4, 1 )
 LINEAR_MULTI_PROC_FUNC_2( grain, omit, 2, 5 )
@@ -55,7 +55,7 @@ void register_lua_cdp_functions_grain( lua_State * L )
 	lua_register( L, "grain_count",			lua_cdp_grain_count			);
 	lua_register( L, "grain_duplicate",		lua_cdp_grain_duplicate		);
 	lua_register( L, "grain_find",			lua_cdp_grain_find			);
-	lua_register( L, "grain_extend",		lua_cdp_grain_extend		);
+	lua_register( L, "grain_extend",		lua_cdp_grainex_extend		);
 	lua_register( L, "grain_grev",			lua_cdp_grain_grev			);
 	lua_register( L, "grain_newtex",		lua_cdp_newtex_newtex		);
 	lua_register( L, "grain_noise_extend",	lua_cdp_grain_noise_extend	);

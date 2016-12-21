@@ -10,7 +10,7 @@
 using namespace std;
 
 //Lua function used for calling arbitrary cdp modules
-int cdp( lua_State * L,  cdpInfo_t info )
+int cdp( lua_State * L, cdpInfo_t info )
 	{
 	string exe, command;
 
@@ -32,8 +32,16 @@ int cdp( lua_State * L,  cdpInfo_t info )
 	lua_settop( L, 0 );
 	vector<string> outFiles;
 
-	if( ! static_cast<AltarThread *>( Thread::getCurrentThread() )->cdp( command, info, outFiles ) ) 
-		return luaL_error( L, "Exiting lua: error from CDP" );
+	AltarThread * T = static_cast<AltarThread *>( Thread::getCurrentThread() );
+	T->setUpProcess( command, info );
+	if( T->allProcessesSetUp ) 
+		{
+		outFiles = T->process();
+		T->allProcessesSetUp = true;
+		T->processList.clear();
+		}
+	//if( ! T->cdp( command, info, outFiles ) ) 
+	//	return luaL_error( L, "Exiting lua: error from CDP" );
 
 	for( auto i : outFiles )
 		{
@@ -77,6 +85,8 @@ int cdp( lua_State * L,  cdpInfo_t info )
 #include "lua_cdp_functions_spec_strange.h"
 #include "lua_cdp_functions_spec_stretch.h"
 
+#include "lua_cdp_functions_custom.h"
+
 void register_lua_cdp_functions( lua_State * L )
 	{
 //Time Domain
@@ -99,16 +109,18 @@ void register_lua_cdp_functions( lua_State * L )
 
 //Spectral Domain
 	register_lua_cdp_functions_blur			( L );	//Untested
-	register_lua_cdp_functions_combine		( L );	//Untested
+	register_lua_cdp_functions_combine		( L );	//spectwin broken (cannot open output), need to test make/make2
 	register_lua_cdp_functions_focus		( L );	//Untested
 	register_lua_cdp_functions_formants		( L );	//Untested
 	register_lua_cdp_functions_hilite		( L );	//Untested
 	register_lua_cdp_functions_morph		( L );	//Untested
 	register_lua_cdp_functions_oneform		( L );	//Untested
 	register_lua_cdp_functions_pitch		( L );	///Incomplete, bad flags
-	register_lua_cdp_functions_PVOC			( L );	//Extract untested
+	register_lua_cdp_functions_PVOC			( L );	//Complete
 	register_lua_cdp_functions_repitch		( L );	//Extra untested, type outputs might not work on anything
 	register_lua_cdp_functions_spec			( L );	///Incomplete, bad flags
 	register_lua_cdp_functions_strange		( L );	///Incomplete, bad flags
 	register_lua_cdp_functions_stretch		( L );	//Untested
+
+	register_lua_cdp_functions_custom		( L );
 	}

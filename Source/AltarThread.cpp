@@ -10,6 +10,53 @@
 
 using namespace std;
 
+//Custom lua junk
+static int lua_string_index( lua_State * L )
+	{											// string | index
+	int index = lua_tointeger( L, 2 );
+	lua_pop( L, 1 );
+	lua_pushpairs( L, { {"housekeep", 1}, {"chans 1", 2}, {to_string(index).c_str(), 4} } );
+	return cdp( L, { inChannel, index } );
+	}
+static int lua_f_index( lua_State * L )
+	{											// f table | index
+	lua_rawgeti( L, 1, lua_tointeger( L, 2 ) ); // f table | index | file string
+	if( lua_isnil( L, 3 ) ) 
+		{
+		AltarThread * T = static_cast<AltarThread *>( Thread::getCurrentThread() );
+		if( lua_tointeger( L, 2 ) == 0 ) 
+			T->log( "You accessed f[0], in lua indices start at 1" );
+		else if( lua_tointeger( L, 2 ) < 0 ) 
+			T->log( "You accessed f[x] with negative x" );
+		else T->log( string("You accessed f[x] at index " )
+					+ lua_tostring( L, 2 ) + " which is beyond the number of supplied files" );
+		//lua_settop( L, 0 );
+		//lua_pushnil( L );
+		return 0;
+		}
+	return 1;
+	}
+static int lua_f_newindex( lua_State * L )
+	{
+	return luaL_error( L, "You tried to assign something to the input file array (f), which is PROHIBITED bozo" );
+	}
+static int lua_print( lua_State * L ) 
+	{
+    int nargs = lua_gettop( L );
+	AltarThread * T = static_cast<AltarThread *>( Thread::getCurrentThread() );
+    for( int i=1; i <= nargs; ++i ) 
+		{
+        if( lua_isstring( L, i ) )	T->log( lua_tostring( L, i ) );
+        else						T->log( "You tried to print a non-string in lua");
+		}
+    return 0;
+	}
+static const struct luaL_Reg printlib [] = //I don't understand why we need this but it works
+	{
+	{"print", lua_print},
+	{NULL, NULL} /* end of array */
+	};
+
 CriticalSection AltarThread::mutex;
 
 AltarThread::AltarThread( const String & name, const String & _script, 
@@ -29,6 +76,11 @@ AltarThread::AltarThread( const String & name, const String & _script,
 		};
 
 	luaL_openlibs( L );
+
+	//redefine Lua's print function to our logging function
+	lua_getglobal( L, "_G" );
+	luaL_register( L, NULL, printlib );
+	lua_pop( L, 1 );
 
 	//Get stuff out of settings file first
 	if( luaL_loadfile( L, ( File::getCurrentWorkingDirectory().getFullPathName() + "/Settings.lua" ).toRawUTF8() ) || lua_pcall( L, 0, 0, 0 ) ) 
@@ -80,15 +132,19 @@ AltarThread::~AltarThread()
 	lua_close( L );
 	workingDir.deleteRecursively();
 	}
-
 const File & AltarThread::getFile( int index )
 	{
 	return *inFiles[ index ];
 	}
-
 size_t AltarThread::getNumFiles()
 	{
 	return inFiles.size();
+	}
+
+std::string AltarThread::getFreeFilename( const std::string & extension )
+	{
+	return "\"" + workingDir.getFullPathName().toStdString() 
+				+ "\\" + to_string( currentUID++ ) + "_altar" + extension + "\"";
 	}
 
 //=================================================================================================
@@ -98,7 +154,6 @@ void AltarThread::log( const String & s )
 	MessageManagerLock mml;
 	Logger::writeToLog( "{Thread: " + getThreadName() + "} " + s );
 	}
-
 void AltarThread::addFile( const File & f )
 	{
 	inFiles.emplace_back( new File( workingDir.getNonexistentChildFile( "input", ".wav" ) ) );
@@ -108,33 +163,13 @@ void AltarThread::addFile( const File & f )
 		signalThreadShouldExit();
 		}
 	}
-
 void AltarThread::paint( Graphics & g )
 	{
 	g.fillAll( threadFinished? PALETTE_1 : PALETTE_2 );
 
 	g.setFont( Font( 18 ) );
 	g.setColour( Colours::white );
-	g.drawText( getThreadName(), getLocalBounds(), Justification::centred );
-	}
-
-//We need this for the lua file object metatable
-static int lua_f_index( lua_State * L )
-	{											// f table | index
-	lua_rawgeti( L, 1, lua_tointeger( L, 2 ) ); // f table | index | file string
-	if( lua_isnil( L, 3 ) ) 
-		{
-		if( lua_tointeger( L, 2 ) == 0 ) 
-			return luaL_error( L, "You accessed f[0], in lua indices start at 1" );
-		else if( lua_tointeger( L, 2 ) < 0 ) 
-			return luaL_error( L, "You accessed f[x] with negative x" );
-		else return luaL_error( L, "You accessed f[x] at an index beyond the files you supplied" );
-		}
-	else return 1;
-	}
-static int lua_f_newindex( lua_State * L )
-	{
-	return luaL_error( L, "You tried to assign something to the input file array (f), which is PROHIBITED bozo" );
+	g.drawText( getThreadName().substring( 5 ), getLocalBounds(), Justification::centred );
 	}
 
 void AltarThread::run()
@@ -143,7 +178,6 @@ void AltarThread::run()
 		{
 		log( string("[Lua] Error: ") + string( lua_tostring(L, -1) ) );
 		};
-
 	if( threadShouldExit() )
 		{
 		log( "Exiting thread early due to startup error" );
@@ -151,12 +185,14 @@ void AltarThread::run()
 		}
 
 	//Make sure the script supplied exists
+#ifdef RELEASE
 	if( ! File( File::getCurrentWorkingDirectory().getFullPathName() + "/" + script ).exists() )
 		{
 		log( "Script specified either does not exist or cannot be accessed: " 
 			+ (File::getCurrentWorkingDirectory().getFullPathName() + "/" + script).toStdString() );
 		return;
 		}
+#endif
 	
 	//Just in case I screwed up clear the stack
 	lua_settop( L, 0 );
@@ -177,8 +213,16 @@ void AltarThread::run()
 	lua_setfield( L, -2, "__newindex" );	// f table | f metatable
 	lua_setmetatable( L, -2 );				// f table
 	lua_setglobal( L, "f" );				//
+
+	//Adding __index to the string metatable for retrieving a channel
+	//lua_get
+
 	//Load the supplied script
-	if( luaL_loadfile( L, script.getCharPointer() ) ) 
+#ifdef DEBUG
+	if( luaL_loadfile( L, "C:\\Users\\Logan\\Desktop\\Altar\\Altar.lua" ) )
+#else
+	if( luaL_loadfile( L, script.getCharPointer() ) )
+#endif 
 		{
 		luaerr( L );
 		return;
@@ -191,7 +235,13 @@ void AltarThread::run()
 		if( ! threadShouldExit() ) 
 			{
 			luaerr( L );
-			log( "[PROCESSING FAILED]" );
+			log( "[PROCESSING FAILED] Time elapsed: " 
+				+ Time( Time::getMillisecondCounter() - startTime ).formatted( "%M:%S:" ) + 
+				to_string( ( Time::getMillisecondCounter() - startTime ) % 1000 ) );
+			const ScopedLock lock( mutex );
+			MessageManagerLock mml;
+			threadFinished = true;
+			repaint();
 			}
 		return;
 		}
@@ -204,9 +254,20 @@ void AltarThread::run()
 	//Pull all the files returned from lua into a container
 	vector< File > outFiles;
 	
-	for( int i = 0; i < numResults; ++i )
+	for( int i = 1; i <= numResults; ++i )
 		{
-		string s = lua_tostring( L, -(1 + i) );
+		if( ! lua_isstring( L, i ) )
+			{
+			log( "Discarding non string output" );
+			continue;
+			}
+		string s = lua_tostring( L, i );
+		struct stat buffer;
+		if( stat( s.substr( 1, s.size() - 2 ).c_str(), &buffer ) != 0 ) //If the file doesn't exist
+			{
+			log( "Discarding nonexistent output " + s );
+			continue;
+			}
 
 		//Everything coming out should have quotes on it but juce doesn't like that so we'll pull them
 		outFiles.emplace_back( s.substr( 1, s.size() - 2 ) );
@@ -227,67 +288,77 @@ void AltarThread::run()
 	repaint();
 	}
 	}
-
-bool AltarThread::cdp( string & command, cdpInfo_t info, vector<string> & outFiles )
+void AltarThread::setUpProcess( string & command, cdpInfo_t info )
 	{
-	string fullCommand = cdpDir + "/" + command;
-	
-	//Function for replacing character tokens with generated files of specified type
-	vector<string> generatedFileNames;
-	auto tokenReplace = [&]( char c, string fileType )
+	processList.emplace_back( cdpDir + "/" + command, info );
+	}
+vector<string> AltarThread::process()
+	{
+	struct Child 
 		{
-		size_t stringPos = 0;
-		while( ( stringPos = fullCommand.find( c, stringPos ) ) != string::npos )
-			{ //We have to add _altar to deal with wacko multi out procs
-			string path = "\"" + workingDir.getFullPathName().toStdString() + "\\" + to_string( currentUID++ ) + "_altar" + fileType + "\"";
-			fullCommand.replace( stringPos, 1, path );
-			
-			generatedFileNames.emplace_back( path );
-			}
+		ChildProcess process;
+		bool startStatus;
+		string output;
+		vector<string> generatedFileNames;
 		};
-	//Check the arguments for any special tokens and replace them with appropriate strings
-	tokenReplace( '<', ".wav" );
-	tokenReplace( '>', ".txt" );
-	tokenReplace( '$', ".mmx" );
-	tokenReplace( '|', "" );
-	tokenReplace( '%', ".for" );
-	tokenReplace( '^', ".env" );
-	
-	
-	//Make the call to the exe requested and display output
-	String output;
 	{
-		//We can't run away to lua until ChildProcess comes off the stack or we'll get memory leak problems ( hence extra braces )
-		ChildProcess cdpProcess;
-		
-		bool startStatus = cdpProcess.start( fullCommand );
-		while( cdpProcess.isRunning() )
+	vector<Child> children( processList.size() );
+
+	for( int i = 0; i < processList.size(); ++i )
+		{
+		//improved tokenreplace, generates file names for placeholder character ('$')
+		size_t stringPos = 0;
+		while( ( stringPos = processList[i].first.find( '$', stringPos ) ) != string::npos )
+			{ //We have to add _altar to deal with wacko multi out procs
+			size_t extensionSize = processList[i].first.find( ' ', stringPos ) - ( stringPos + 1 );
+			string extension = processList[i].first.substr( stringPos + 1, extensionSize );
+			string path = getFreeFilename( extension );
+			children[i].generatedFileNames.emplace_back( path );
+			processList[i].first.replace( stringPos, 1 + extensionSize, path );
+			}
+		}
+	
+	//Start running each process
+	for( int i = 0; i < processList.size(); ++i )
+		{
+		children[i].startStatus = children[i].process.start( processList[i].first );
+		}
+	//Wait for everything to finish and escape if needed
+	for( int i = 0; i < processList.size(); ++i )
+		{
+		while( children[i].process.isRunning() )
 			{
 			//We can't simply block because the gui thread might ask this thread to exit
 			Thread::wait( 30 );
 			if( threadShouldExit() ) 
 				{
-				cdpProcess.kill();
-				return false; 
+				for( auto &i : children )
+					i.process.kill();
+				goto killSwitch; //Using goto to force ChildProcess off the stack, avoids memory leak
 				}
 			}
-
-		output = cdpProcess.readAllProcessOutput();
-
-		bool endStatus = cdpProcess.getExitCode();
-		if( ! startStatus || endStatus != 0 ) //If either startup or processing went wrong, error out
+		}
+	vector<string> output;
+	for( int i = 0; i < children.size(); ++i ) 
+		{
+		children[i].output = children[i].process.readAllProcessOutput().toStdString();
+		if( ! children[i].startStatus || children[i].process.getExitCode() != 0 ) //If either startup or processing went wrong, error out
 			{
-			log( "[CDP] Error running command " + fullCommand + "\n[CDP] " + output  );
-			return false;
+			log( "[CDP] Error running command " + get<0>(processList[i]) + "\n[CDP] " + children[i].output );
 			}
+		else
+			{
+			//This is handled outside the output lookup because we need access to the output string
+			if( get<1>( processList[i] ).first == cmdInfo ) 
+				log( "[CDP] " + get<0>( processList[i] ) + " gave info: " + children[i].output );
+			//Do lookup for outfile names. Most cdp processes output a single given file but some
+			//	output multiple with related names. We use this to handle those cases.	
+			else outFileTypeLookup( output, children[i].generatedFileNames, processList[i].first, processList[i].second );
+			}
+		}
+	return output;
 	}
-
-	//This is handled outside the output lookup because we need access to the output string
-	if( info.first == cmdInfo) log( "[CDP] " + fullCommand + " gave info: " + output );
-	//Do lookup for outfile names. Most cdp processes output a single given file but some
-	//	output multiple with related names. We use this to handle those cases.	
-	outFileTypeLookup( outFiles, generatedFileNames, command, info );
-	return true;
+	killSwitch: luaL_error( L, "Escaping processes for thread close" );
 	}
 
 //This handles all the stupid different ways the CDP outputs files
@@ -307,6 +378,7 @@ void AltarThread::outFileTypeLookup( vector<string> & output, const vector<strin
 			for( auto & i : genFileNames ) output.emplace_back( i );
 			break;
 			}
+		case cmdInfo: { break; } //This is handled in cdp
 
 		case outAppend: { //This is for processes appending integers to the supplied file name
 			output.emplace_back( genFileNames[0] );
@@ -375,6 +447,7 @@ void AltarThread::outFileTypeLookup( vector<string> & output, const vector<strin
 				}
 			break;
 			}
+		case sfeditCutmany:
 		case outUnknownAppend1: {
 			//while we are still finding files, keep adding those files
 			int i = 1;
@@ -444,6 +517,34 @@ void AltarThread::outFileTypeLookup( vector<string> & output, const vector<strin
 			b.insert( b.size() - 5, "1" ); 
 			output.emplace_back( a );
 			output.emplace_back( b );
+			break;
+			}
+		case repitchGetpitch: {
+			output.emplace_back( genFileNames[1] );
+			break;
+			}
+		case housekeepCopy: {
+			for( int i = 0; i < info.second; ++i )
+				{
+				string s = genFileNames[0];
+				string index = to_string( i + 1 );
+				s.insert( s.size() - 5, "_" + string( 3 - index.length(), '0') + index ); //Won't work for binary files
+				output.emplace_back( s );
+				}
+			break;
+			}
+		case modifyShudder: {
+			string s = genFileNames[0];
+			output.emplace_back( s.replace( s.size() - 6, 1, "0" ) );
+			break;
+			}
+		case specNuSpecgrids: {
+			for( int i = 0; i < info.second; ++i )
+				{
+				string s = genFileNames[0];
+				s.insert( s.size() - 5, to_string( i ) ); //Won't work for binary files
+				output.emplace_back( s );
+				}
 			break;
 			}
 

@@ -8,16 +8,32 @@ LUA_CDP_MODAL_MULTI( lua_cdp_cantor_set, {
 	case 3: LINEAR_MULTI_PROC( "cantor", "set 3", 5, 0 );
 	})
 LINEAR_MULTI_NPROC_TYPE_FUNC_2( constrict, constrict, 1, 0, WAV_TYPE, 1 )
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( sfedit, cut, 2, 1, WAV_TYPE, 1 )
+LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_cut, {
+	case 1: LINEAR_MULTI_PROC( "sfedit", "cut 1", 2, 1 );
+	case 2: LINEAR_MULTI_PROC( "sfedit", "cut 2", 2, 1 );
+	case 3: LINEAR_MULTI_PROC( "sfedit", "cut 3", 2, 1 );
+	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_cutend, {
 	case 1: LINEAR_MULTI_PROC( "sfedit", "cutend 1", 1, 1 );
 	case 2: LINEAR_MULTI_PROC( "sfedit", "cutend 2", 1, 1 );
 	case 3: LINEAR_MULTI_PROC( "sfedit", "cutend 3", 1, 1 );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_cutmany, {
-	case 1: LINEAR_MULTI_PROC( "sfedit", "cutmany 1", 3, 0 );
-	case 2: LINEAR_MULTI_PROC( "sfedit", "cutmany 2", 3, 0 );
-	case 3: LINEAR_MULTI_PROC( "sfedit", "cutmany 3", 3, 0 );
+	case 1: return lua_multi_proc( L, 2, 0, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"sfedit", 1}, {"cutmany 1", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {sfeditCutmany, 0} );
+		});
+	case 2: return lua_multi_proc( L, 2, 0, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"sfedit", 1}, {"cutmany 2", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {sfeditCutmany, 0} );
+		});
+	case 3: return lua_multi_proc( L, 2, 0, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"sfedit", 1}, {"cutmany 3", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {sfeditCutmany, 0} );
+		});
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_excise , {
 	case 1: LINEAR_MULTI_PROC( "sfedit", "excise 1", 2, 1 );
@@ -39,7 +55,32 @@ LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_insil, {
 	case 2: LINEAR_MULTI_PROC( "sfedit", "insil 2", 2, 3 );
 	case 3: LINEAR_MULTI_PROC( "sfedit", "insil 3", 2, 3 );
 	})
-LUA_ERROR_FUNC( isolate_isolate, "Isolate tries to use an incorrectly handled input file name" )
+LUA_CDP_MODAL_MULTI( lua_cdp_isolate_isolate, {
+	case 1: return lua_multi_proc( L, 1, 3, []( lua_State * L ){
+		lua_pushpairs( L, { {"isolate", 1}, {"isolate 1", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {outUnknownAppend, 0} );
+		});
+	case 2: return lua_multi_proc( L, 1, 3, []( lua_State * L ){
+		lua_pushpairs( L, { {"isolate", 1}, {"isolate 2", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {outUnknownAppend, 0} );
+		});
+	case 3: return lua_multi_proc( L, 2, 5, []( lua_State * L ){
+		lua_pushpairs( L, { {"isolate", 1}, {"isolate 3", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {outUnknownAppend, 0} );
+		});
+	case 4: return lua_multi_proc( L, 1, 3, []( lua_State * L ){
+		lua_pushpairs( L, { {"isolate", 1}, {"isolate 4", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {outUnknownAppend, 0} );
+		});
+	case 5: return lua_multi_proc( L, 1, 4, []( lua_State * L ){
+		lua_pushpairs( L, { {"isolate", 1}, {"isolate 5", 2}, {WAV_TYPE, 4} } );
+		return cdp( L, {outUnknownAppend, 0} );
+		});
+
+	//LINEAR_MULTI_NPROC_TYPE_2( 3, isolate, isolate, 2, 5, WAV_TYPE, 1 );
+	//LINEAR_MULTI_NPROC_TYPE_2( 4, isolate, isolate, 1, 3, WAV_TYPE, 1 );
+	//LINEAR_MULTI_NPROC_TYPE_2( 5, isolate, isolate, 1, 4, WAV_TYPE, 1 );
+	})
 NONLINEAR_PROC_FUNC( sfedit, join, 0, 3 )
 NONLINEAR_PROC_FUNC( sfedit, joindyn, 1, 3 )
 NONLINEAR_PROC_FUNC( sfedit, joinseq, 1, 4 )
@@ -113,9 +154,9 @@ LUA_CDP_MODAL_MULTI( lua_cdp_silend_silend, {
 	case 2: LINEAR_MULTI_PROC( "silend", "silend 2", 1, 0 );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_sphinx, {
-	case 1: NONLINEAR_PROC( "sfedit", "sphinx 1", 2, 2, WAV_TYPE );
-	case 2: NONLINEAR_PROC( "sfedit", "sphinx 2", 3, 2, WAV_TYPE );
-	case 3: NONLINEAR_PROC( "sfedit", "sphinx 3", 3, 2, WAV_TYPE );
+	case 1: NONLINEAR_PROC( sfedit, sphinx 1, 2, 2, WAV_TYPE );
+	case 2: NONLINEAR_PROC( sfedit, sphinx 2, 3, 2, WAV_TYPE );
+	case 3: NONLINEAR_PROC( sfedit, sphinx 3, 3, 2, WAV_TYPE );
 	})
 LINEAR_MULTI_NPROC_TYPE_FUNC_2( subtract, subtract, 0, 1, WAV_TYPE, 2 )
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_syllables, {
@@ -124,10 +165,10 @@ LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_syllables, {
 	case 3: LINEAR_MULTI_PROC( "sfedit", "syllables 3", 3, 1 );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_twixt, {
-	case 1: NONLINEAR_PROC( "sfedit", "twixt 1", 2, 2, WAV_TYPE );
-	case 2: NONLINEAR_PROC( "sfedit", "twixt 2", 3, 2, WAV_TYPE );
-	case 3: NONLINEAR_PROC( "sfedit", "twixt 3", 3, 2, WAV_TYPE );
-	case 4: NONLINEAR_PROC( "sfedit", "twixt 4", 2, 0, WAV_TYPE );
+	case 1: NONLINEAR_PROC( sfedit, twixt 1, 2, 2, WAV_TYPE );
+	case 2: NONLINEAR_PROC( sfedit, twixt 2, 3, 2, WAV_TYPE );
+	case 3: NONLINEAR_PROC( sfedit, twixt 3, 3, 2, WAV_TYPE );
+	case 4: NONLINEAR_PROC( sfedit, twixt 4, 2, 0, WAV_TYPE );
 	})
 LUA_CDP_MODAL_MULTI( lua_cdp_sfedit_zcut, {
 	case 1: LINEAR_MULTI_PROC( "sfedit", "zcut 1", 2, 0 );
@@ -159,12 +200,12 @@ void register_lua_cdp_functions_sfedit( lua_State * L )
 	lua_register( L, "sfedit_insert",		lua_cdp_sfedit_insert		);
 	lua_register( L, "sfedit_insil",		lua_cdp_sfedit_insil		);
 	lua_register( L, "sfedit_isolate",		lua_cdp_isolate_isolate		);
-	lua_register( L, "sfedit_join",		lua_cdp_sfedit_join			);
+	lua_register( L, "sfedit_join",			lua_cdp_sfedit_join			);
 	lua_register( L, "sfedit_joindyn",		lua_cdp_sfedit_joindyn		);
 	lua_register( L, "sfedit_joinseq",		lua_cdp_sfedit_joinseq		);
 	lua_register( L, "sfedit_manysil",		lua_cdp_manysil_manysil		);
 	lua_register( L, "sfedit_masks",		lua_cdp_sfedit_masks		);
-	lua_register( L, "sfedit_noisecut",	lua_cdp_sfedit_noisecut		);
+	lua_register( L, "sfedit_noisecut",		lua_cdp_sfedit_noisecut		);
 	lua_register( L, "sfedit_packet",		lua_cdp_packet_packet		);
 	lua_register( L, "sfedit_partition",	lua_cdp_partition_partition );
 	lua_register( L, "sfedit_silence",		lua_cdp_prefix_silence		);
@@ -174,9 +215,9 @@ void register_lua_cdp_functions_sfedit( lua_State * L )
 	lua_register( L, "sfedit_shrink",		lua_cdp_shrink_shrink		);
 	lua_register( L, "sfedit_silend",		lua_cdp_silend_silend		);
 	lua_register( L, "sfedit_sphinx",		lua_cdp_sfedit_sphinx		);
-	lua_register( L, "sfedit_subtract",	lua_cdp_subtract_subtract	);
+	lua_register( L, "sfedit_subtract",		lua_cdp_subtract_subtract	);
 	lua_register( L, "sfedit_syllables",	lua_cdp_sfedit_syllables	);
 	lua_register( L, "sfedit_twixt",		lua_cdp_sfedit_twixt		);
-	lua_register( L, "sfedit_zcut",		lua_cdp_sfedit_zcut			);
+	lua_register( L, "sfedit_zcut",			lua_cdp_sfedit_zcut			);
 	lua_register( L, "sfedit_zcuts",		lua_cdp_sfedit_zcuts		);
 	}

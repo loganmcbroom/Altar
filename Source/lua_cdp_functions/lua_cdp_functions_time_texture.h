@@ -9,7 +9,11 @@ int lua_cdp_texture_ ## process( lua_State * L ) \
 	lua_remove( L, 1 ); \
 	if( mode > 5 ) \
 		return luaL_error( L, ( "lua_cdp_texture_" + std::string( #process ) + " has no mode " + std::to_string( mode ) ).c_str() ); \
-	return lua_nonlinear_proc( L, params, flags, "texture", ( std::string(#process) +  " " + to_string( mode ) ).c_str(), WAV_TYPE );\
+	return lua_nonlinear_proc( L, params, flags, [&]( lua_State * L, int groupSize ) \
+		{ \
+		lua_pushpairs( L, { {"texture", 1}, { (std::string(#process) +  " " + to_string( mode )).c_str(), 2}, {WAV_TYPE, 3 + groupSize} } );\
+		return cdp( L ); \
+		} ); \
 	}
 
 TEXTURE_MODAL_FUNC( simple,		13, 5	)

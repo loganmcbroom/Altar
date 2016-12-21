@@ -40,8 +40,16 @@ int lua_cdp_repitch_generate( lua_State * L )
 	return cdp( L );
 	}
 LUA_CDP_MODAL_MULTI( lua_cdp_repitch_getpitch, {
-	LINEAR_MULTI_NPROC_TYPE_2( 1, repitch, getpitch, 1, 8, WAV_TYPE, 1 ); 
-	LINEAR_MULTI_NPROC_TYPE_2( 2, repitch, getpitch, 1, 8, WAV_TYPE, 1 ); 
+	case 1: return lua_multi_proc( L, 0, 8, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"repitch",1}, {"getpitch 1",2}, {WAV_TYPE, 4}, {FRQ_TYPE, 5} } );
+		return cdp( L, { repitchGetpitch, 0 } );
+		});
+	case 2: return lua_multi_proc( L, 0, 8, []( lua_State * L )
+		{
+		lua_pushpairs( L, { {"repitch",1}, {"getpitch 2",2}, {WAV_TYPE, 4}, {BRK_TYPE, 5} } );
+		return cdp( L, { repitchGetpitch, 0 } );
+		});
 	}) 
 LUA_CDP_MODAL_MULTI( lua_cdp_repitch_insertsil, {
 	LINEAR_MULTI_NPROC_TYPE_2( 1, repitch, insertsil, 1, 0, BIN_TYPE, 1 ); 
@@ -55,10 +63,10 @@ LUA_CDP_MODAL_MULTI( lua_cdp_repitch_invert, {
 	LINEAR_MULTI_NPROC_TYPE_2( 1, repitch, invert, 1, 3, BIN_TYPE, 1 ); 
 	LINEAR_MULTI_NPROC_TYPE_2( 2, repitch, invert, 1, 3, BIN_TYPE, 1 ); 
 	}) 
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, noisetosil, 0, 0, BIN_TYPE, 1 )
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pchshift, 1, 0, BIN_TYPE, 1 )
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pchtotext, 0, 0, BIN_TYPE, 1 )
-LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pitchtosil, 0, 0, BIN_TYPE, 1 )
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, noisetosil, 0, 0, FRQ_TYPE, 1 )
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pchshift, 1, 0, FRQ_TYPE, 1 )
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pchtotext, 0, 0, TXT_TYPE, 1 )
+LINEAR_MULTI_NPROC_TYPE_FUNC_2( repitch, pitchtosil, 0, 0, FRQ_TYPE, 1 )
 LUA_CDP_MODAL_MULTI( lua_cdp_repitch_quantise, {
 	LINEAR_MULTI_NPROC_TYPE_2( 1, repitch, quantise, 1, 1, BIN_TYPE, 1 ); 
 	LINEAR_MULTI_NPROC_TYPE_2( 2, repitch, quantise, 1, 1, BIN_TYPE, 1 ); 

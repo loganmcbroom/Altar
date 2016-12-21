@@ -17,8 +17,10 @@ public:
 
 	const File & getFile( int index );
 	size_t getNumFiles();
+	std::string getFreeFilename( const std::string & extension );
 
-	bool cdp( std::string & command, cdpInfo_t info, std::vector<std::string> &outFiles );
+	void setUpProcess( std::string & command, cdpInfo_t info );
+	std::vector<std::string> process();
 
 ///private:
 	void log( const String & s );
@@ -38,6 +40,9 @@ public:
 	std::string cdpDir;
 	File workingDir;
 	bool threadFinished = false;
+
+	bool allProcessesSetUp = true;
+	std::vector< std::pair< std::string,std::pair< cdpOutputType, int >>> processList;
 
 	static CriticalSection mutex;
 	};
